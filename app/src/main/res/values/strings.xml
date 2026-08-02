@@ -81,6 +81,13 @@
     <string name="specific_reset_days">Reset to 10, 7, 3, 2, 1 and 0</string>
     <string name="specific_time_header">Time of day</string>
     <string name="specific_no_days">No days set, so nothing will be sent. Add at least one.</string>
+
+    <!-- Test notifications -->
+    <string name="notif_test_header">Preview</string>
+    <string name="notif_test_explainer">Sent straight away, using your real countdowns. It doesn\'t change what\'s scheduled or use up a reminder.</string>
+    <string name="digest_send_test">Send a test digest now</string>
+    <string name="specific_send_test">Send a test reminder now</string>
+    <string name="notif_test_example_name">Example countdown</string>
     <string name="specific_day_on_the_day">On the day</string>
     <string name="specific_day_n">%1$d days remaining</string>
     <string name="specific_day_one">1 day remaining</string>

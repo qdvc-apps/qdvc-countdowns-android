@@ -123,6 +123,16 @@ private fun AppRoot(viewModel: AppViewModel) {
         }
     }
 
+    // Posting while the permission is missing is a silent no-op, so ask first and
+    // let the user tap again once they have granted it.
+    fun sendTestOrAskPermission(send: () -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && notificationsBlocked) {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            send()
+        }
+    }
+
     // Any CSV, however the provider labels it. Some file managers report a plain
     // text or octet-stream MIME type for .csv, so filtering on text/csv alone
     // would hide the user's file from the picker.
@@ -222,6 +232,7 @@ private fun AppRoot(viewModel: AppViewModel) {
                     addDigestTime = viewModel::addDigestTime,
                     removeDigestTime = viewModel::removeDigestTime,
                     resetDigestTimes = viewModel::resetDigestTimes,
+                    sendTestDigest = { sendTestOrAskPermission(viewModel::sendTestDigest) },
                     setRemindersEnabled = { enabled ->
                         viewModel.setRemindersEnabled(enabled)
                         if (enabled) requestPermissionIfNeeded(
@@ -231,6 +242,7 @@ private fun AppRoot(viewModel: AppViewModel) {
                     toggleReminderDay = viewModel::toggleReminderDay,
                     resetReminderDays = viewModel::resetReminderDays,
                     setReminderTime = viewModel::setReminderTime,
+                    sendTestReminder = { sendTestOrAskPermission(viewModel::sendTestReminder) },
                     setThemeMode = viewModel::setThemeMode,
                     setLightTheme = viewModel::setLightTheme,
                     setDarkTheme = viewModel::setDarkTheme,

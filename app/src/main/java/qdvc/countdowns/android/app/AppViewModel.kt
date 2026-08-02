@@ -19,6 +19,8 @@ import qdvc.countdowns.android.app.model.SettingsPage
 import qdvc.countdowns.android.app.model.Tab
 import qdvc.countdowns.android.app.model.ThemeMode
 import qdvc.countdowns.android.app.model.TimeOfDay
+import qdvc.countdowns.android.app.notify.NotificationContent
+import qdvc.countdowns.android.app.notify.Notifications
 import qdvc.countdowns.android.app.notify.ReminderScheduler
 import java.time.LocalDate
 
@@ -153,6 +155,46 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             else -> return false
         }
         return true
+    }
+
+    // --- Test notifications -----------------------------------------------
+
+    /**
+     * Both senders post immediately rather than going through the scheduler, so
+     * the notification appears while the user is still looking at the button.
+     *
+     * They deliberately ignore the master switch: the point of a preview is to see
+     * what a notification looks like *before* deciding to turn it on. They also
+     * leave the fired-reminder record alone, so sending a test cannot stop a real
+     * reminder from arriving later.
+     */
+    fun sendTestDigest() {
+        val context = getApplication<Application>()
+        viewModelScope.launch {
+            Notifications.ensureChannels(context)
+            val text = NotificationContent.digestText(context, _countdowns.value, _today.value)
+                ?: return@launch
+            Notifications.postDigest(context, text)
+        }
+    }
+
+    fun sendTestReminder() {
+        val context = getApplication<Application>()
+        viewModelScope.launch {
+            Notifications.ensureChannels(context)
+            // The soonest real countdown makes the most representative preview.
+            // With none to hand, a stand-in still shows the shape of the thing.
+            val next = upcoming().firstOrNull()
+            val days = next?.daysFrom(_today.value)?.toInt() ?: NotificationContent.EXAMPLE_DAYS
+            val name = next?.name ?: context.getString(R.string.notif_test_example_name)
+            Notifications.postReminder(
+                context = context,
+                id = Notifications.ID_TEST_REMINDER,
+                title = name,
+                text = NotificationContent.whenLabel(context, days),
+                grouped = false
+            )
+        }
     }
 
     // --- Settings mutators ------------------------------------------------

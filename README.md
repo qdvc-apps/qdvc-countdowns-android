@@ -57,6 +57,10 @@ approaches, at 10, 7, 3, 2 and 1 days remaining and on the day itself. The set o
 days is yours to change and applies to every countdown. They arrive at one
 configurable time (9 AM to begin with). Each countdown gets each reminder once.
 
+Each kind has a **Send a test** button on its Settings page, which posts one
+straight away using your real countdowns. It works whether or not the kind is
+switched on, and it neither changes the schedule nor uses up a reminder.
+
 Delivery is deliberately inexact: these are scheduled with `WorkManager`, which
 can drift by minutes, and longer if the device is dozing. That is the right
 trade for a daily nudge, and it avoids asking you for the exact-alarm permission.

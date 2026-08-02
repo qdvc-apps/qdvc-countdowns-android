@@ -61,6 +61,16 @@ screens of different heights, which is why it is easy to reintroduce.
 `AnimatedContent` is keyed on the destination but the direction is derived from
 **depth**, so adding a Settings page needs no change to the animation.
 
+The function builds its `ContentTransform` through the constructor rather than the
+more idiomatic `(enter togetherWith exit).using(sizeTransform)`. That is not a
+style choice: `using` is declared inside `AnimatedContentTransitionScope`, so it
+only resolves inside a `transitionSpec` lambda and fails with *Unresolved
+reference* from a shared top-level function. `ContentTransform.sizeTransform` is
+not an escape route either — it is a `var` with an `internal set`. If you want the
+idiomatic form, the function has to become an extension on
+`AnimatedContentTransitionScope<*>`; the constructor keeps it callable from
+anywhere.
+
 ## Storage Access Framework
 
 The app holds a **document URI**, not a path. All access goes through
@@ -119,6 +129,15 @@ job's remaining delay is a *duration*, not a wall-clock time, so after a reboot 
 a timezone change a "9 AM" digest can land at some other hour. The receiver
 re-anchors it.
 
+The two **Send a test** buttons in Settings bypass the scheduler and post
+directly, so the notification arrives while the user is still looking at the
+button. They ignore the master switch on purpose — the point of a preview is to
+see the thing before deciding to turn it on — and they never write to the
+fired-reminder record, so sending a test cannot suppress a real reminder later.
+Both take their wording from `NotificationContent`, shared with the worker; a
+preview that showed different copy from the real notification would be worse than
+no preview at all.
+
 Reminders are delivered once per countdown per threshold. The record lives in
 DataStore as a set of `date|name|days` keys, pruned by comparing the leading ISO
 date with today — which works only because the date comes **first** in the key and
@@ -173,6 +192,9 @@ The paths where the decisions above actually bite:
 - Back from the Past and Settings roots (should land on Countdowns) and back from
   the Countdowns list (should close the app).
 - Re-tap each tab while already on it.
+- Both **Send a test** buttons, with a file chosen and without one; then with the
+  notification permission denied, where they should prompt for it rather than
+  appear to do nothing.
 - Set a digest time a minute or two ahead and wait for it; then with no file
   chosen, to see the "no file" digest.
 - Cross midnight with the app open, then resume it: a countdown at one day

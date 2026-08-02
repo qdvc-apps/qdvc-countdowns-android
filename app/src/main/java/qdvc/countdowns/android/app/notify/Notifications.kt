@@ -20,6 +20,9 @@ object Notifications {
 
     const val ID_DIGEST = 1
     const val ID_REMINDER_SUMMARY = 2
+
+    /** Fixed, so repeated tests replace each other instead of piling up. */
+    const val ID_TEST_REMINDER = 3
     private const val ID_REMINDER_BASE = 1000
 
     fun ensureChannels(context: Context) {

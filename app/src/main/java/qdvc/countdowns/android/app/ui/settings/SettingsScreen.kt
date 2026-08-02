@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
@@ -75,10 +76,12 @@ class SettingsActions(
     val addDigestTime: (TimeOfDay) -> Unit,
     val removeDigestTime: (TimeOfDay) -> Unit,
     val resetDigestTimes: () -> Unit,
+    val sendTestDigest: () -> Unit,
     val setRemindersEnabled: (Boolean) -> Unit,
     val toggleReminderDay: (Int) -> Unit,
     val resetReminderDays: () -> Unit,
     val setReminderTime: (TimeOfDay) -> Unit,
+    val sendTestReminder: () -> Unit,
     val setThemeMode: (ThemeMode) -> Unit,
     val setLightTheme: (String) -> Unit,
     val setDarkTheme: (String) -> Unit,
@@ -295,7 +298,9 @@ private fun DigestPage(
     )
     Explainer(stringResource(R.string.digest_explainer))
 
-    if (notificationsBlocked && settings.digestEnabled) {
+    // Shown whenever the permission is missing, not only when the switch is on, so
+    // a test that delivers nothing is always explained.
+    if (notificationsBlocked) {
         Notice(stringResource(R.string.permission_needed), MaterialTheme.colorScheme.error)
     }
 
@@ -325,6 +330,14 @@ private fun DigestPage(
         onClick = actions.resetDigestTimes
     )
 
+    SectionHeader(stringResource(R.string.notif_test_header))
+    ListRow(
+        title = stringResource(R.string.digest_send_test),
+        icon = Icons.Filled.NotificationsNone,
+        onClick = actions.sendTestDigest
+    )
+    Explainer(stringResource(R.string.notif_test_explainer))
+
     if (pickingTime) {
         TimePickerDialog(
             initial = TimeOfDay(9, 0),
@@ -353,7 +366,7 @@ private fun RemindersPage(
     )
     Explainer(stringResource(R.string.specific_explainer))
 
-    if (notificationsBlocked && settings.remindersEnabled) {
+    if (notificationsBlocked) {
         Notice(stringResource(R.string.permission_needed), MaterialTheme.colorScheme.error)
     }
 
@@ -398,6 +411,14 @@ private fun RemindersPage(
         title = Dates.timeOfDay(settings.reminderTime),
         onClick = { pickingTime = true }
     )
+
+    SectionHeader(stringResource(R.string.notif_test_header))
+    ListRow(
+        title = stringResource(R.string.specific_send_test),
+        icon = Icons.Filled.NotificationsNone,
+        onClick = actions.sendTestReminder
+    )
+    Explainer(stringResource(R.string.notif_test_explainer))
 
     if (pickingTime) {
         TimePickerDialog(

@@ -3,12 +3,10 @@ package qdvc.countdowns.android.app.notify
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import qdvc.countdowns.android.app.R
 import qdvc.countdowns.android.app.data.CountdownRepository
 import qdvc.countdowns.android.app.data.CountdownsState
 import qdvc.countdowns.android.app.data.SettingsRepository
 import qdvc.countdowns.android.app.util.Digest
-import qdvc.countdowns.android.app.util.DigestSummary
 import java.time.LocalDate
 
 /**
@@ -54,26 +52,7 @@ class ReminderWorker(
     }
 
     private fun postDigest(context: Context, state: CountdownsState, today: LocalDate) {
-        val text = when (state) {
-            is CountdownsState.NoFile -> context.getString(R.string.notif_digest_no_file)
-            is CountdownsState.Failed -> context.getString(R.string.notif_digest_unreadable)
-            is CountdownsState.Loading -> return
-            is CountdownsState.Loaded -> {
-                when (val summary = Digest.summarise(state.countdowns, today)) {
-                    is DigestSummary.Week -> context.resources.getQuantityString(
-                        R.plurals.notif_digest_week, summary.count, summary.count
-                    )
-                    is DigestSummary.Fortnight -> context.resources.getQuantityString(
-                        R.plurals.notif_digest_fortnight, summary.count, summary.count
-                    )
-                    is DigestSummary.Month -> context.resources.getQuantityString(
-                        R.plurals.notif_digest_month, summary.count, summary.count
-                    )
-                    DigestSummary.Nothing ->
-                        context.getString(R.string.notif_digest_nothing_month)
-                }
-            }
-        }
+        val text = NotificationContent.digestText(context, state, today) ?: return
         Notifications.postDigest(context, text)
     }
 
@@ -95,11 +74,7 @@ class ReminderWorker(
 
         val lines = ArrayList<String>(fresh.size)
         fresh.forEach { (countdown, days) ->
-            val when_ = when (days) {
-                0 -> context.getString(R.string.notif_reminder_today)
-                1 -> context.getString(R.string.notif_reminder_tomorrow)
-                else -> context.getString(R.string.notif_reminder_days, days)
-            }
+            val when_ = NotificationContent.whenLabel(context, days)
             lines += "$when_: ${countdown.name}"
             Notifications.postReminder(
                 context = context,
