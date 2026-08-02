@@ -1,0 +1,18 @@
+{
+  "id": "midnight",
+  "name": "Midnight",
+  "dark": true,
+  "colors": {
+    "background": "#12151A",
+    "surface": "#1A1E25",
+    "surfaceVariant": "#262C36",
+    "onBackground": "#E6E9EF",
+    "onSurfaceVariant": "#A8B1C0",
+    "outline": "#3A424F",
+    "primary": "#8AB4F8",
+    "onPrimary": "#0B1220",
+    "secondary": "#F2C15C",
+    "onSecondary": "#241A00",
+    "error": "#F2857A"
+  }
+}

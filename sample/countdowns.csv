@@ -1,0 +1,11 @@
+date,name,category,owner,notes
+2026-08-14,Quarterly board meeting,Event,Priya,Papers due the Monday before
+2026-08-21,Submit VAT return,Deadline (external),Finance,HMRC portal
+2026-08-28,Design review with Acme,Event,Sam,
+2026-09-04,Internal code freeze,Deadline (internal),Engineering,Release 2.1
+2026-09-11,Acme contract renewal,Deadline (external),Legal,Auto-renews if we do nothing
+2026-09-30,Annual leave starts,Event,,Two weeks
+2026-10-15,Grant application closes,Deadline (external),Priya,No extensions
+2026-11-02,"Offsite, Lisbon",Event,Sam,Book flights by September
+2026-12-19,Performance reviews written up,Deadline (internal),Managers,
+2026-07-01,Website relaunch,Event,Sam,Shipped

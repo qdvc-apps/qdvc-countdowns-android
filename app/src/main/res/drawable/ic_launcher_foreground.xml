@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- An hourglass: two triangles meeting at the waist, with end caps. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M31,29h46v6h-46z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M31,73h46v6h-46z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M35,35h38l-19,19z" />
+    <path
+        android:fillColor="#8AB4F8"
+        android:pathData="M35,73h38l-19,-19z" />
+</vector>

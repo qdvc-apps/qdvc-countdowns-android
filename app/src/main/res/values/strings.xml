@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QDVC Countdowns</string>
+
+    <!-- Tabs -->
+    <string name="tab_countdowns">Countdowns</string>
+    <string name="tab_past">Past</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Categories -->
+    <string name="category_event">Event</string>
+    <string name="category_deadline_internal">Deadline (internal)</string>
+    <string name="category_deadline_external">Deadline (external)</string>
+    <string name="category_other">Uncategorised</string>
+
+    <!-- Countdown list and detail -->
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="days_until_label">days to go</string>
+    <string name="day_until_label">day to go</string>
+    <string name="days_since_label">days ago</string>
+    <string name="day_since_label">day ago</string>
+    <string name="happening_today">Happening today</string>
+    <string name="back">Back</string>
+    <string name="reload">Reload file</string>
+    <string name="detail_row_count">Row %1$d of the file</string>
+    <string name="detail_other_columns">Other columns</string>
+
+    <!-- Empty and error states -->
+    <string name="empty_no_file_title">No countdowns file yet</string>
+    <string name="empty_no_file_body">Pick a CSV file in Settings and your countdowns will appear here.</string>
+    <string name="empty_no_file_action">Open Settings</string>
+    <string name="empty_none_upcoming_title">Nothing coming up</string>
+    <string name="empty_none_upcoming_body">Every countdown in the file has already passed. Look under Past, or add newer rows to the file.</string>
+    <string name="empty_none_past_title">Nothing has passed yet</string>
+    <string name="empty_none_past_body">Countdowns move here the day after they happen.</string>
+    <string name="error_read_title">Can\'t read the file</string>
+    <string name="error_read_body">%1$s Pick the file again in Settings.</string>
+    <string name="warning_skipped_rows">%1$d rows were skipped: the date wasn\'t in yyyy-mm-dd format.</string>
+    <string name="warning_missing_columns">The file has no %1$s column.</string>
+
+    <!-- Settings root -->
+    <string name="settings_file">Countdowns file</string>
+    <string name="settings_file_none">No file chosen</string>
+    <string name="settings_daily_digest">Daily digest</string>
+    <string name="settings_specific_reminders">Reminders for single countdowns</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_light_style">Light mode style</string>
+    <string name="settings_dark_style">Dark mode style</string>
+    <string name="settings_text_size">Text size</string>
+    <string name="settings_about">About</string>
+    <string name="settings_off">Off</string>
+    <string name="settings_reminders_summary">%1$s days before</string>
+
+    <!-- File page -->
+    <string name="file_choose">Choose a CSV file</string>
+    <string name="file_replace">Choose a different file</string>
+    <string name="file_forget">Forget this file</string>
+    <string name="file_forget_confirm_title">Forget this file?</string>
+    <string name="file_forget_confirm_body">This only clears the app\'s pointer to the file. Your file is not deleted or changed.</string>
+    <string name="file_forget_confirm_action">Forget</string>
+    <string name="cancel">Cancel</string>
+    <string name="file_explainer">The app reads three columns: date (yyyy-mm-dd), name, and category (Event, Deadline (internal), or Deadline (external)). Any other columns are shown on the detail screen. The file is only ever read, never written to.</string>
+    <string name="file_row_count">%1$d countdowns loaded</string>
+
+    <!-- Daily digest page -->
+    <string name="digest_switch">Send a daily digest</string>
+    <string name="digest_explainer">A nudge to open the app, telling you how many countdowns are coming up.</string>
+    <string name="digest_times_header">Times of day</string>
+    <string name="digest_add_time">Add a time</string>
+    <string name="digest_reset_times">Reset to 9:00 AM and 3:00 PM</string>
+    <string name="digest_remove_time">Remove this time</string>
+    <string name="digest_no_times">No times set, so nothing will be sent. Add at least one.</string>
+
+    <!-- Specific reminders page -->
+    <string name="specific_switch">Remind me about single countdowns</string>
+    <string name="specific_explainer">One notification per countdown as its date approaches. The same set of days applies to every countdown.</string>
+    <string name="specific_days_header">Days remaining</string>
+    <string name="specific_add_day">Add a day</string>
+    <string name="specific_reset_days">Reset to 10, 7, 3, 2, 1 and 0</string>
+    <string name="specific_time_header">Time of day</string>
+    <string name="specific_no_days">No days set, so nothing will be sent. Add at least one.</string>
+    <string name="specific_day_on_the_day">On the day</string>
+    <string name="specific_day_n">%1$d days remaining</string>
+    <string name="specific_day_one">1 day remaining</string>
+    <string name="specific_add_day_title">How many days remaining?</string>
+    <string name="add">Add</string>
+
+    <!-- Appearance -->
+    <string name="appearance_automatic">Automatic</string>
+    <string name="appearance_light">Light</string>
+    <string name="appearance_dark">Dark</string>
+    <string name="appearance_automatic_subtitle">Follow the system setting</string>
+    <string name="text_size_preview">14 days to go</string>
+    <string name="text_size_decrease">Smaller</string>
+    <string name="text_size_increase">Larger</string>
+    <string name="reset">Reset</string>
+
+    <!-- About -->
+    <string name="about_version">Version %1$s</string>
+    <string name="about_body">Counts the days to the dates in a CSV file you choose. The file stays where it is and is only ever read.</string>
+
+    <!-- Notification permission -->
+    <string name="permission_needed">Notifications are switched off for this app in Android settings, so nothing will be delivered.</string>
+
+    <!-- Notification channels -->
+    <string name="channel_digest_name">Daily digest</string>
+    <string name="channel_digest_description">A regular nudge summarising what is coming up.</string>
+    <string name="channel_reminders_name">Countdown reminders</string>
+    <string name="channel_reminders_description">Notifications about a single countdown as its date approaches.</string>
+
+    <!-- Notification content -->
+    <string name="notif_digest_title">Countdowns</string>
+    <string name="notif_digest_nothing_month">Nothing in the next month. Open the app to check your list is up to date.</string>
+    <string name="notif_digest_no_file">No countdowns file chosen. Open the app to pick one.</string>
+    <string name="notif_digest_unreadable">Your countdowns file can\'t be read. Open the app to pick it again.</string>
+    <string name="notif_reminder_today">Today</string>
+    <string name="notif_reminder_tomorrow">Tomorrow</string>
+    <string name="notif_reminder_days">In %1$d days</string>
+
+    <plurals name="notif_digest_week">
+        <item quantity="one">%1$d countdown in the next week.</item>
+        <item quantity="other">%1$d countdowns in the next week.</item>
+    </plurals>
+    <plurals name="notif_digest_fortnight">
+        <item quantity="one">%1$d countdown in the next fortnight.</item>
+        <item quantity="other">%1$d countdowns in the next fortnight.</item>
+    </plurals>
+    <plurals name="notif_digest_month">
+        <item quantity="one">%1$d countdown in the next month.</item>
+        <item quantity="other">%1$d countdowns in the next month.</item>
+    </plurals>
+</resources>

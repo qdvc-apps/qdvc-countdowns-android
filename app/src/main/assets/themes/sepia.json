@@ -1,0 +1,18 @@
+{
+  "id": "sepia",
+  "name": "Sepia",
+  "dark": false,
+  "colors": {
+    "background": "#F1ECE1",
+    "surface": "#FAF6EE",
+    "surfaceVariant": "#E2DACA",
+    "onBackground": "#231F17",
+    "onSurfaceVariant": "#57503F",
+    "outline": "#C8BEA8",
+    "primary": "#2C6049",
+    "onPrimary": "#FFFFFF",
+    "secondary": "#8A5A00",
+    "onSecondary": "#FFFFFF",
+    "error": "#A02B22"
+  }
+}

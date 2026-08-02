@@ -1,0 +1,18 @@
+{
+  "id": "slate",
+  "name": "Slate",
+  "dark": true,
+  "colors": {
+    "background": "#1B1E1D",
+    "surface": "#232726",
+    "surfaceVariant": "#313735",
+    "onBackground": "#E4E8E6",
+    "onSurfaceVariant": "#A6AFAC",
+    "outline": "#454C4A",
+    "primary": "#7FD1B0",
+    "onPrimary": "#06231A",
+    "secondary": "#E8C07D",
+    "onSecondary": "#251A05",
+    "error": "#F0908A"
+  }
+}

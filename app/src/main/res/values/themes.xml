@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Minimal base theme. All real colouring is done in Compose from the JSON
+         themes in assets/themes, so this only has to avoid a flash of the wrong
+         colour at launch and keep the action bar out of the way. -->
+    <style name="Theme.QdvcCountdowns" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/launch_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>
