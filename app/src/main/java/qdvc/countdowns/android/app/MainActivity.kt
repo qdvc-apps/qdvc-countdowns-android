@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
@@ -41,6 +43,7 @@ import qdvc.countdowns.android.app.notify.Notifications
 import qdvc.countdowns.android.app.ui.components.AppTopBar
 import qdvc.countdowns.android.app.ui.components.BottomBar
 import qdvc.countdowns.android.app.ui.components.hierarchySlide
+import qdvc.countdowns.android.app.ui.components.rememberHaptics
 import qdvc.countdowns.android.app.ui.countdowns.CountdownDetailScreen
 import qdvc.countdowns.android.app.ui.countdowns.CountdownListScreen
 import qdvc.countdowns.android.app.ui.settings.SettingsActions
@@ -96,6 +99,19 @@ private fun AppRoot(viewModel: AppViewModel) {
     val nav by viewModel.nav.collectAsStateWithLifecycle()
     val state by viewModel.countdowns.collectAsStateWithLifecycle()
     val today by viewModel.today.collectAsStateWithLifecycle()
+
+    val haptics = rememberHaptics()
+
+    // Hoisted deliberately. Both the tab switch below and the list-to-detail
+    // AnimatedContent discard the outgoing composition, so a LazyListState
+    // remembered inside the list screen would be rebuilt at zero on every return
+    // and the list would silently lose its place. rememberSaveable does not help:
+    // it survives configuration change and process death, not leaving composition.
+    // Living here, in AppRoot, is above both. Two fixed lists means two states are
+    // enough — no keyed map or pruning is needed. Settings and the detail view are
+    // left to reset to the top, which is the right behaviour for each.
+    val upcomingListState: LazyListState = rememberLazyListState()
+    val pastListState: LazyListState = rememberLazyListState()
 
     var notificationsBlocked by remember { mutableStateOf(false) }
     fun refreshNotificationPermission() {
@@ -170,7 +186,16 @@ private fun AppRoot(viewModel: AppViewModel) {
                 backContentDescription = stringResource(R.string.back),
                 actions = {
                     if (!inDetail && nav.tab != Tab.SETTINGS && settings.hasFile) {
-                        IconButton(onClick = viewModel::reload) {
+                        // The haptic sits here, at the interaction site, not in the
+                        // ViewModel: reload() is also called from onResume(), and
+                        // buzzing every time the app comes to the foreground would
+                        // be wrong.
+                        IconButton(
+                            onClick = {
+                                haptics.tap()
+                                viewModel.reload()
+                            }
+                        ) {
                             Icon(
                                 imageVector = Icons.Filled.Refresh,
                                 contentDescription = stringResource(R.string.reload)
@@ -204,6 +229,7 @@ private fun AppRoot(viewModel: AppViewModel) {
                             countdowns = if (past) viewModel.past() else viewModel.upcoming(),
                             today = today,
                             past = past,
+                            listState = if (past) pastListState else upcomingListState,
                             onOpen = { viewModel.openCountdown(it.key) },
                             onOpenSettings = { viewModel.openSettingsPage(SettingsPage.FILE) }
                         )

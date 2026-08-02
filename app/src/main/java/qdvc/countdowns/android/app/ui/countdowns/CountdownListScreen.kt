@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -40,6 +41,7 @@ import qdvc.countdowns.android.app.data.CountdownsState
 import qdvc.countdowns.android.app.model.Countdown
 import qdvc.countdowns.android.app.ui.components.EmptyState
 import qdvc.countdowns.android.app.ui.components.Notice
+import qdvc.countdowns.android.app.ui.components.rememberHaptics
 import qdvc.countdowns.android.app.ui.components.icon
 import qdvc.countdowns.android.app.ui.components.labelRes
 import qdvc.countdowns.android.app.ui.theme.LocalTextScale
@@ -55,6 +57,8 @@ fun CountdownListScreen(
     countdowns: List<Countdown>,
     today: LocalDate,
     past: Boolean,
+    /** Hoisted by the caller so the list keeps its place across tab and detail switches. */
+    listState: LazyListState,
     onOpen: (Countdown) -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier
@@ -114,6 +118,7 @@ fun CountdownListScreen(
                 // there would not compile.
                 val warning = if (past) null else warnings(state)
                 LazyColumn(
+                    state = listState,
                     modifier = modifier.fillMaxSize(),
                     contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp)
                 ) {
@@ -164,6 +169,7 @@ private fun CountdownRow(
     onClick: () -> Unit
 ) {
     val scale = LocalTextScale.current
+    val haptics = rememberHaptics()
     val days = countdown.daysFrom(today)
     val color = categoryColor(countdown.category)
     val isToday = days == 0L
@@ -172,7 +178,10 @@ private fun CountdownRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable {
+                haptics.tap()
+                onClick()
+            }
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
         Box(

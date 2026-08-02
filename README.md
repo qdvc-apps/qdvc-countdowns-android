@@ -75,6 +75,13 @@ theme restyles the list badges, the detail ring and the chips for free.
 
 Text size is a single setting applied to the content that carries meaning.
 
+Short vibrations confirm that an action landed, honouring the system's own
+touch-feedback setting — turn haptics off in Android settings and the app is
+silent. Feedback marks a change rather than a touch, so navigating, toggling and
+committing all buzz, while scrolling, a disabled control, and a tab tap that moves
+nothing stay quiet. Resetting a setting and discarding a chosen file feel heavier
+than an ordinary tap, because they throw something away.
+
 ## Building
 
 Requires JDK 17 and the Android SDK (compile and target 34, minimum 26).

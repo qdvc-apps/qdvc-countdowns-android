@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,11 @@ import androidx.compose.ui.unit.dp
 /**
  * One row shape, reused everywhere: leading icon, primary text, optional
  * secondary text, optional trailing element, then a divider.
+ *
+ * Because nearly every tap in the app passes through here, this is also where most
+ * of the haptics live. [sensation] defaults to a plain tap; pass `Reject` for a row
+ * whose tap throws something away, or `null` where the caller fires its own (see
+ * [SwitchRow], whose control can be hit without the row's own click ever running).
  */
 @Composable
 fun ListRow(
@@ -39,16 +45,27 @@ fun ListRow(
     subtitle: String? = null,
     icon: ImageVector? = null,
     iconTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    sensation: Sensation? = Sensation.Tap,
     onClick: (() -> Unit)? = null,
     divider: Boolean = true,
     trailing: @Composable (() -> Unit)? = null
 ) {
+    val haptics = rememberHaptics()
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+                .then(
+                    if (onClick != null) {
+                        Modifier.clickable {
+                            sensation?.let(haptics::perform)
+                            onClick()
+                        }
+                    } else {
+                        Modifier
+                    }
+                )
                 .padding(horizontal = 20.dp, vertical = 14.dp)
         ) {
             if (icon != null) {
@@ -127,13 +144,45 @@ fun SwitchRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val haptics = rememberHaptics()
+    // Tapping the Switch itself never runs the row's clickable, so both paths go
+    // through one toggle and the haptic lives there. `sensation = null` on the row
+    // stops the row-tap path firing twice.
+    val toggle: (Boolean) -> Unit = { value ->
+        haptics.tap()
+        onCheckedChange(value)
+    }
     ListRow(
         title = title,
         subtitle = subtitle,
         icon = icon,
-        onClick = { onCheckedChange(!checked) }
+        sensation = null,
+        onClick = { toggle(!checked) }
     ) {
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Switch(checked = checked, onCheckedChange = toggle)
+    }
+}
+
+/** As [SwitchRow], for a row that is one of several independent choices. */
+@Composable
+fun CheckboxRow(
+    title: String,
+    subtitle: String? = null,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val haptics = rememberHaptics()
+    val toggle: (Boolean) -> Unit = { value ->
+        haptics.tap()
+        onCheckedChange(value)
+    }
+    ListRow(
+        title = title,
+        subtitle = subtitle,
+        sensation = null,
+        onClick = { toggle(!checked) }
+    ) {
+        Checkbox(checked = checked, onCheckedChange = toggle)
     }
 }
 
@@ -186,6 +235,7 @@ fun EmptyState(
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null
 ) {
+    val haptics = rememberHaptics()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -220,7 +270,10 @@ fun EmptyState(
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
-                    .clickable(onClick = onAction)
+                    .clickable {
+                        haptics.tap()
+                        onAction()
+                    }
                     .padding(horizontal = 16.dp, vertical = 10.dp)
             )
         }

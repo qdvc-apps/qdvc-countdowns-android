@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,14 +55,17 @@ import qdvc.countdowns.android.app.model.SettingsPage
 import qdvc.countdowns.android.app.model.ThemeMode
 import qdvc.countdowns.android.app.model.ThemeSpec
 import qdvc.countdowns.android.app.model.TimeOfDay
+import qdvc.countdowns.android.app.ui.components.CheckboxRow
 import qdvc.countdowns.android.app.ui.components.ChoiceRow
 import qdvc.countdowns.android.app.ui.components.Explainer
 import qdvc.countdowns.android.app.ui.components.ListRow
 import qdvc.countdowns.android.app.ui.components.NavigationRow
 import qdvc.countdowns.android.app.ui.components.Notice
 import qdvc.countdowns.android.app.ui.components.SectionHeader
+import qdvc.countdowns.android.app.ui.components.Sensation
 import qdvc.countdowns.android.app.ui.components.SwitchRow
 import qdvc.countdowns.android.app.ui.components.hierarchySlide
+import qdvc.countdowns.android.app.ui.components.rememberHaptics
 import qdvc.countdowns.android.app.ui.theme.LocalTextScale
 import qdvc.countdowns.android.app.util.Dates
 
@@ -228,6 +230,7 @@ private fun FilePage(
     actions: SettingsActions
 ) {
     var confirmForget by remember { mutableStateOf(false) }
+    val haptics = rememberHaptics()
 
     Explainer(stringResource(R.string.file_explainer))
 
@@ -265,6 +268,10 @@ private fun FilePage(
             text = { Text(stringResource(R.string.file_forget_confirm_body)) },
             confirmButton = {
                 TextButton(onClick = {
+                    // The commit discards the user's chosen file, so Reject rather
+                    // than Confirm: the weight tells them which side of the
+                    // decision they landed on. (Their file itself is untouched.)
+                    haptics.reject()
                     confirmForget = false
                     actions.forgetFile()
                 }) {
@@ -275,7 +282,10 @@ private fun FilePage(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { confirmForget = false }) {
+                TextButton(onClick = {
+                    haptics.tap()
+                    confirmForget = false
+                }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -290,6 +300,7 @@ private fun DigestPage(
     actions: SettingsActions
 ) {
     var pickingTime by remember { mutableStateOf(false) }
+    val haptics = rememberHaptics()
 
     SwitchRow(
         title = stringResource(R.string.digest_switch),
@@ -310,8 +321,13 @@ private fun DigestPage(
         Explainer(stringResource(R.string.digest_no_times))
     }
     settings.digestTimes.forEach { time ->
-        ListRow(title = Dates.timeOfDay(time)) {
-            IconButton(onClick = { actions.removeDigestTime(time) }) {
+        ListRow(title = Dates.timeOfDay(time), sensation = null) {
+            IconButton(
+                onClick = {
+                    haptics.tap()
+                    actions.removeDigestTime(time)
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = stringResource(R.string.digest_remove_time),
@@ -327,6 +343,9 @@ private fun DigestPage(
     )
     ListRow(
         title = stringResource(R.string.digest_reset_times),
+        // Reset discards the times the user chose, and acts with no confirmation
+        // step of its own, so the row tap *is* the commit.
+        sensation = Sensation.Reject,
         onClick = actions.resetDigestTimes
     )
 
@@ -334,6 +353,8 @@ private fun DigestPage(
     ListRow(
         title = stringResource(R.string.digest_send_test),
         icon = Icons.Filled.NotificationsNone,
+        // The only in-app receipt for something that then appears outside the app.
+        sensation = Sensation.Confirm,
         onClick = actions.sendTestDigest
     )
     Explainer(stringResource(R.string.notif_test_explainer))
@@ -358,6 +379,7 @@ private fun RemindersPage(
 ) {
     var pickingTime by remember { mutableStateOf(false) }
     var addingDay by remember { mutableStateOf(false) }
+    val haptics = rememberHaptics()
 
     SwitchRow(
         title = stringResource(R.string.specific_switch),
@@ -384,17 +406,15 @@ private fun RemindersPage(
         .sortedDescending()
 
     shown.forEach { days ->
-        val checked = days in settings.reminderDays
-        ListRow(
+        CheckboxRow(
             title = when (days) {
                 0 -> stringResource(R.string.specific_day_on_the_day)
                 1 -> stringResource(R.string.specific_day_one)
                 else -> stringResource(R.string.specific_day_n, days)
             },
-            onClick = { actions.toggleReminderDay(days) }
-        ) {
-            Checkbox(checked = checked, onCheckedChange = { actions.toggleReminderDay(days) })
-        }
+            checked = days in settings.reminderDays,
+            onCheckedChange = { actions.toggleReminderDay(days) }
+        )
     }
     ListRow(
         title = stringResource(R.string.specific_add_day),
@@ -403,6 +423,7 @@ private fun RemindersPage(
     )
     ListRow(
         title = stringResource(R.string.specific_reset_days),
+        sensation = Sensation.Reject,
         onClick = actions.resetReminderDays
     )
 
@@ -416,6 +437,7 @@ private fun RemindersPage(
     ListRow(
         title = stringResource(R.string.specific_send_test),
         icon = Icons.Filled.NotificationsNone,
+        sensation = Sensation.Confirm,
         onClick = actions.sendTestReminder
     )
     Explainer(stringResource(R.string.notif_test_explainer))
@@ -480,6 +502,7 @@ private fun ThemePage(
 @Composable
 private fun TextSizePage(settings: AppSettings, actions: SettingsActions) {
     val scale = LocalTextScale.current
+    val haptics = rememberHaptics()
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -501,14 +524,23 @@ private fun TextSizePage(settings: AppSettings, actions: SettingsActions) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End
         ) {
+            // A disabled stepper is inert: `enabled = false` means onClick never
+            // runs, so the bounds are silent without a special case. If a full tap
+            // feels heavy under a fast run of presses, `step()` is the rung below.
             TextButton(
-                onClick = { actions.nudgeTextScale(-AppSettings.TEXT_SCALE_STEP) },
+                onClick = {
+                    haptics.tap()
+                    actions.nudgeTextScale(-AppSettings.TEXT_SCALE_STEP)
+                },
                 enabled = settings.textScale > AppSettings.TEXT_SCALE_MIN
             ) {
                 Text("\u2212", fontSize = 20.sp)
             }
             TextButton(
-                onClick = { actions.nudgeTextScale(AppSettings.TEXT_SCALE_STEP) },
+                onClick = {
+                    haptics.tap()
+                    actions.nudgeTextScale(AppSettings.TEXT_SCALE_STEP)
+                },
                 enabled = settings.textScale < AppSettings.TEXT_SCALE_MAX
             ) {
                 Text("+", fontSize = 20.sp)
@@ -517,6 +549,7 @@ private fun TextSizePage(settings: AppSettings, actions: SettingsActions) {
     }
     ListRow(
         title = stringResource(R.string.reset),
+        sensation = Sensation.Reject,
         onClick = actions.resetTextScale
     )
 }
@@ -543,16 +576,29 @@ private fun TimePickerDialog(
         initialMinute = initial.minute,
         is24Hour = false
     )
+    val haptics = rememberHaptics()
     AlertDialog(
         onDismissRequest = onDismiss,
         text = { TimePicker(state = state) },
         confirmButton = {
-            TextButton(onClick = { onConfirm(TimeOfDay(state.hour, state.minute)) }) {
+            TextButton(
+                onClick = {
+                    haptics.confirm()
+                    onConfirm(TimeOfDay(state.hour, state.minute))
+                }
+            ) {
                 Text(stringResource(R.string.add))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(
+                onClick = {
+                    haptics.tap()
+                    onDismiss()
+                }
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
         }
     )
 }
@@ -564,6 +610,7 @@ private fun AddDayDialog(
 ) {
     var text by remember { mutableStateOf("") }
     val value = text.toIntOrNull()
+    val haptics = rememberHaptics()
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.specific_add_day_title)) },
@@ -577,14 +624,24 @@ private fun AddDayDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { value?.let(onConfirm) },
+                onClick = {
+                    haptics.confirm()
+                    value?.let(onConfirm)
+                },
                 enabled = value != null && value in 0..365
             ) {
                 Text(stringResource(R.string.add))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(
+                onClick = {
+                    haptics.tap()
+                    onDismiss()
+                }
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
         }
     )
 }

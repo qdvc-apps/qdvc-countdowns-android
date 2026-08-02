@@ -107,9 +107,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     // --- Navigation -------------------------------------------------------
 
-    fun selectTab(tab: Tab) {
+    /**
+     * Returns whether anything actually changed, which the bottom bar uses to decide
+     * whether to give tactile feedback: re-tapping a tab that is already at its root
+     * moves nothing and should stay silent.
+     */
+    fun selectTab(tab: Tab): Boolean {
         val current = _nav.value
-        _nav.value = if (current.tab == tab) {
+        val next = if (current.tab == tab) {
             // Re-tapping the current tab returns it to its own root.
             when (tab) {
                 Tab.COUNTDOWNS -> current.copy(upcomingSelection = null)
@@ -119,6 +124,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             current.copy(tab = tab)
         }
+        _nav.value = next
+        return next != current
     }
 
     fun openCountdown(key: String) {

@@ -24,6 +24,7 @@ fun AppTopBar(
     backContentDescription: String = "Back",
     actions: @Composable () -> Unit = {}
 ) {
+    val haptics = rememberHaptics()
     TopAppBar(
         title = {
             Text(
@@ -35,7 +36,15 @@ fun AppTopBar(
         },
         navigationIcon = {
             if (onBack != null) {
-                IconButton(onClick = onBack) {
+                // Only the arrow buzzes. The Android system back button reaches the
+                // same handler, but the platform provides its own feedback for the
+                // gesture and doubling it would feel wrong.
+                IconButton(
+                    onClick = {
+                        haptics.tap()
+                        onBack()
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = backContentDescription

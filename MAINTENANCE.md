@@ -162,6 +162,68 @@ Category colours come from `MaterialTheme.colorScheme` (`primary`, `secondary`,
 `error`) rather than a fixed palette, so a new theme restyles every badge, chip
 and ring without touching that code.
 
+## Haptic feedback
+
+Everything goes through `View.performHapticFeedback` in `ui/components/Haptics.kt`,
+never `Vibrator`/`VibrationEffect`. That honours the system's own touch-feedback
+setting (a user who turned haptics off is not overridden), needs no `VIBRATE`
+permission, and no-ops on a device with no vibrator. `FLAG_IGNORE_GLOBAL_SETTING`
+is deliberately not passed.
+
+The three intensity rungs are tabulated in a comment above the class. **That table
+is the dial.** If a sensation feels wrong on real hardware, moving it one rung is a
+one-word change, and the table exists so nobody re-derives it. In particular, taps
+use `VIRTUAL_KEY`, not `CONTEXT_CLICK` — the latter looks like the obvious choice
+for a light tick and is the platform's *faintest* effect, which reads as broken
+haptics next to every other app on the phone.
+
+`CONFIRM`, `REJECT`, `GESTURE_START` and `GESTURE_END` are API 30+ and go through
+`api30()` with a named fallback. Check any constant you add against `minSdk 26`;
+the compiler will not.
+
+Three rules shape where the calls live:
+
+- **Feedback marks a change, not a touch.** `selectTab` returns whether anything
+  moved, and the bottom bar buzzes only when it did — so re-tapping a tab collapses
+  a detail view with a tap, and does nothing at all when the tab was already at its
+  root.
+- **The call goes at the interaction site, never in the ViewModel.** `reload()` is
+  reached from the toolbar button *and* from `onResume()`; a haptic in the ViewModel
+  would buzz every time the app came to the foreground.
+- **A disabled control is silent.** The text-size steppers need no special case for
+  this: `enabled = false` means `onClick` never runs.
+
+Most taps pass through `ListRow`, so that is where the default lives, via a
+`sensation` parameter. Two things to know when editing it:
+
+- `SwitchRow` and `CheckboxRow` pass `sensation = null` and fire their own. Tapping
+  the control itself never runs the row's `clickable`, so both paths have to go
+  through one toggle or the feedback is inconsistent depending on where you land.
+- `Reject` marks a tap that throws something away — the three **Reset** rows and the
+  commit of **Forget this file** — and `Confirm` marks a commit: the two dialogs'
+  accept buttons and **Send a test**, which is the only in-app receipt for something
+  that then appears outside the app. A row that merely *opens* a confirmation takes
+  an ordinary tap, so the weight tells the user which side of the decision they are on.
+
+`Step`, `PickUp` and `Drop` have no call site: they serve drag and swipe gestures
+and there are none here. They are kept so the vocabulary stays enumerable.
+
+## Lists keep their place
+
+`LazyListState` for both countdown lists is hoisted into `AppRoot`, above the tab
+`when` and above the list-to-detail `AnimatedContent`, and passed down.
+
+This is not tidiness. Both of those structures **discard the outgoing
+composition**, so a state remembered inside the list screen is rebuilt at zero on
+every return and the list silently loses its place — very visible on a long CSV.
+`rememberSaveable` is not a fix: it survives configuration change and process
+death, not *leaving composition*.
+
+Two fixed lists means two hoisted states are enough; there is no need for a keyed
+map or key pruning here. Settings and the detail view deliberately reset to the
+top, which is the right behaviour for each — they are left with their own state
+rather than exempted by accident.
+
 ## Insets
 
 `enableEdgeToEdge()` is on. The `TopAppBar` consumes the status-bar inset itself,
@@ -191,7 +253,15 @@ The paths where the decisions above actually bite:
   Settings.
 - Back from the Past and Settings roots (should land on Countdowns) and back from
   the Countdowns list (should close the app).
-- Re-tap each tab while already on it.
+- Re-tap each tab while already on it — nothing should move, and with haptics on,
+  nothing should buzz either. Then re-tap a tab from inside a detail view or a
+  Settings sub-page, which should collapse to the root *and* buzz.
+- Scroll a long list well down, open a countdown, and come back: the list must be
+  where you left it. Then switch to another tab and back, same expectation. Settings
+  and the detail view should still open at the top.
+- With haptics on, check that Reset and Forget feel heavier than an ordinary row,
+  that the text-size steppers go silent at both bounds, and that returning to the
+  app from the background does not buzz.
 - Both **Send a test** buttons, with a file chosen and without one; then with the
   notification permission denied, where they should prompt for it rather than
   appear to do nothing.
